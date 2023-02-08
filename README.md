@@ -4,7 +4,7 @@ A demo to reproduce the sheet issue.
 
 > Note that this issue can be found on iOS 16.3/iPadOS 16.3. On iOS 15.5 in simulator, it doesn't have issues.
 
-This issue can be reproduceb by the following step.
+This issue can be reproduced by the following step.
 
 1. Construct a view content with a List or a ScrollView
 2. Put a button on top of the view hierarchy: the top position is is important

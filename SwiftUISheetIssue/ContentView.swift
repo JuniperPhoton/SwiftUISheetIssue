@@ -8,19 +8,30 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var showSheet = false
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+            Button {
+                showSheet = true
+                print("on tap button")
+            } label: {
+                HStack {
+                    Text("Hello, world!")
+                }
+            }
+            
+            ScrollView {
+                LazyVStack {
+                    ForEach(0...20, id: \.self) { item in
+                        Text(String(item))
+                            .padding()
+                    }
+                }
+            }
         }
-        .padding()
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
+        .sheet(isPresented: $showSheet) {
+            Text("Sheet content")
+        }
     }
 }

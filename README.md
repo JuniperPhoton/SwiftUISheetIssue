@@ -4,6 +4,38 @@ A demo to reproduce the sheet issue.
 
 > Note that this issue can be found on iOS 16.3/iPadOS 16.3. On iOS 15.5 in simulator, it doesn't have issues.
 
+```
+struct ContentView: View {
+    @State var showSheet = false
+    
+    var body: some View {
+        VStack {
+            Button {
+                showSheet = true
+                print("on tap button")
+            } label: {
+                HStack {
+                    Text("Hello, world!")
+                }
+            }
+            
+            ScrollView {
+                LazyVStack {
+                    ForEach(0...20, id: \.self) { item in
+                        Text(String(item))
+                            .padding()
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showSheet) {
+            Text("Sheet content")
+        }
+    }
+}
+
+```
+
 This issue can be reproduced by the following step.
 
 1. Construct a view content with a List or a ScrollView

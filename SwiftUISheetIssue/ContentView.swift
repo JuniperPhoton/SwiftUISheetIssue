@@ -9,7 +9,7 @@ import SwiftUI
 
 /// A demo to reproduce the sheet issue.
 ///
-/// This issue can be reproduceb by the following step.
+/// This issue can be reproduced by the following step.
 ///
 /// 1. Construct a view content with a List or a ScrollView
 /// 2. Put a button on top of the view hierarchy: the top position is is important

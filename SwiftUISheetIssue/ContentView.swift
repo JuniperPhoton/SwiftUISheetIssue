@@ -24,7 +24,7 @@ import SwiftUI
 ///
 /// So I think the issue is about .ignoresSafeArea (which is used inside the List or ScrollView)
 struct ContentView: View {
-    @State var showSheet = false
+    @State private var showSheet = false
     
     var body: some View {
         VStack {
@@ -32,27 +32,74 @@ struct ContentView: View {
                 showSheet = true
                 print("on tap button")
             } label: {
-                HStack {
-                    Text("Hello, world!")
-                }
+                Text("Tap me to present a sheet")
             }
             
+            // By default, a scroll view uses .ignoresSafeArea() inside
+            // which causes this issue.
             ScrollView {
                 LazyVStack {
                     ForEach(0...20, id: \.self) { item in
-                        Text(String(item))
-                            .padding()
+                        Text(String(item)).padding()
                     }
                 }
             }
             
-// This can also help reproducing the issue, the key is .ignoresSafeArea()
-//            Spacer()
-//            Text("Ignored")
-//                .ignoresSafeArea()
+            // This can also help reproducing the issue, the key line is .ignoresSafeArea()
+            // Text("Ignored")
+            //     .ignoresSafeArea()
+            //     .frame(maxHeight: .infinity)
         }
-        .sheet(isPresented: $showSheet) {
+        .sheetCompat(isPresented: $showSheet) {
             Text("Sheet content")
         }
     }
+}
+
+/// Use this modifier to present a sheet without encountering the following issue:
+/// - First present a sheet using .sheet(item:_:_)
+/// - Then go back to the home screen of iPhone or iPad
+/// - Return to the app, dismiss the presented sheet
+/// - The views at the top of the root view, can't response to hit test even thought it looks right
+public extension View {
+    func sheetCompat<ViewContent: View, Item: Identifiable>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> ViewContent
+    ) -> some View {
+        self.sheet(item: item, onDismiss: {
+            onDismiss?()
+            fixContentViewTransformIssue()
+        }, content: content)
+    }
+    
+    func sheetCompat<ViewContent: View>(
+        isPresented: Binding<Bool>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> ViewContent
+    ) -> some View {
+        self.sheet(isPresented: isPresented, onDismiss: {
+            onDismiss?()
+            fixContentViewTransformIssue()
+        }, content: content)
+    }
+}
+
+private func fixContentViewTransformIssue() {
+#if os(iOS)
+    // In case someone is not using Scene based lifecycle, we still use this deprecated
+    // method to get the window
+    UIApplication.shared.windows.forEach { window in
+        guard let view = window.rootViewController?.view else {
+            return
+        }
+        
+        // This is the weird way to fix.
+        // We know setting the transform property multiply times will still result
+        // in one drawing cycle.
+        // But it just fixes.
+        view.transform = CGAffineTransform(translationX: 0, y: 100)
+        view.transform = CGAffineTransform(translationX: 0, y: 0)
+    }
+#endif
 }
